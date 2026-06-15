@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { db } from '../utils/firebase';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 
 // Helper to format date as YYYY-MM-DD
 export const getTodayDateString = () => {
@@ -538,3 +540,101 @@ export const useLifeOSStore = create(
         }
     )
 );
+
+let isSyncingFromRemote = false;
+let unsubscribe = null;
+
+const startFirebaseListener = (store) => {
+    if (unsubscribe) return;
+    const docRef = doc(db, "sync", "raju");
+    unsubscribe = onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const remoteData = docSnap.data();
+            isSyncingFromRemote = true;
+            
+            store.setState({
+                subscriptions: remoteData.subscriptions || [],
+                transactions: remoteData.transactions || [],
+                tasks: remoteData.tasks || [],
+                habits: remoteData.habits || [],
+                budgets: remoteData.budgets || [],
+                goals: remoteData.goals || [],
+                books: remoteData.books || [],
+                weeklyFocus: remoteData.weeklyFocus || '',
+                weeklyFocusCompleted: remoteData.weeklyFocusCompleted || false,
+                moodHistory: remoteData.moodHistory || {},
+                currency: remoteData.currency || 'USD'
+            });
+            
+            isSyncingFromRemote = false;
+        }
+    });
+};
+
+const stopFirebaseListener = () => {
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+    }
+};
+
+export const setupSync = (store) => {
+    // If already authenticated on load
+    const initialState = store.getState();
+    if (initialState.isAuthenticated && initialState.user?.name === 'Raju') {
+        startFirebaseListener(store);
+    }
+
+    // Listen to changes in authentication status
+    store.subscribe((state, prevState) => {
+        const authChanged = state.isAuthenticated !== prevState.isAuthenticated;
+        if (authChanged) {
+            if (state.isAuthenticated && state.user?.name === 'Raju') {
+                startFirebaseListener(store);
+            } else {
+                stopFirebaseListener();
+            }
+        }
+    });
+
+    // Push local updates to Firebase
+    store.subscribe((state, prevState) => {
+        if (isSyncingFromRemote) return;
+        if (!state.isAuthenticated || state.user?.name !== 'Raju') return;
+
+        const hasChanged = 
+            state.subscriptions !== prevState.subscriptions ||
+            state.transactions !== prevState.transactions ||
+            state.tasks !== prevState.tasks ||
+            state.habits !== prevState.habits ||
+            state.budgets !== prevState.budgets ||
+            state.goals !== prevState.goals ||
+            state.books !== prevState.books ||
+            state.weeklyFocus !== prevState.weeklyFocus ||
+            state.weeklyFocusCompleted !== prevState.weeklyFocusCompleted ||
+            state.moodHistory !== prevState.moodHistory ||
+            state.currency !== prevState.currency;
+
+        if (hasChanged) {
+            const docRef = doc(db, "sync", "raju");
+            setDoc(docRef, {
+                subscriptions: state.subscriptions,
+                transactions: state.transactions,
+                tasks: state.tasks,
+                habits: state.habits,
+                budgets: state.budgets,
+                goals: state.goals,
+                books: state.books,
+                weeklyFocus: state.weeklyFocus,
+                weeklyFocusCompleted: state.weeklyFocusCompleted,
+                moodHistory: state.moodHistory,
+                currency: state.currency,
+                updatedAt: Date.now()
+            }).catch(err => console.error("Error syncing to Firebase:", err));
+        }
+    });
+};
+
+// Start setup
+setupSync(useLifeOSStore);
+
