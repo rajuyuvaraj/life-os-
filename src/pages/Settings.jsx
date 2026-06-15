@@ -12,6 +12,7 @@ export default function Settings() {
         goals,
         importData, 
         factoryReset,
+        clearAllData,
         currency: storeCurrency,
         setCurrency: setStoreCurrency,
         addToast 
@@ -77,6 +78,7 @@ export default function Settings() {
 
     // Reset warnings
     const [confirmReset, setConfirmReset] = useState(false);
+    const [confirmClear, setConfirmClear] = useState(false);
 
     const handleFactoryReset = () => {
         if (!confirmReset) {
@@ -89,6 +91,17 @@ export default function Settings() {
         localStorage.removeItem('life-os-agent-name');
         setAgentName('OPERATOR-01');
         setConfirmReset(false);
+    };
+
+    const handleClearAllData = () => {
+        if (!confirmClear) {
+            setConfirmClear(true);
+            addToast("Click again to confirm clearing all data to 0!", "warning");
+            return;
+        }
+
+        clearAllData();
+        setConfirmClear(false);
     };
 
     return (
@@ -180,21 +193,34 @@ export default function Settings() {
                 <div className="floating-label floating-label-red">DANGER ZONE</div>
                 <h3 className="font-sans font-black text-xl text-red tracking-wide uppercase flex items-center gap-2">
                     <ShieldAlert size={20} />
-                    <span>SYSTEM RESET</span>
+                    <span>SYSTEM RESET & WIPE</span>
                 </h3>
 
                 <p className="font-mono text-xs text-red uppercase leading-relaxed font-bold">
-                    WARNING: THIS ACTION WIPES LOCAL STORAGE AND RE-INITIALIZES MOCK DATA TEMPLATES. THIS CANNOT BE UNDONE.
+                    WARNING: THESE ACTIONS CANNOT BE UNDONE. YOU CAN EITHER RESET TO ZERO OR RESTORE INITIAL DEMO TEMPLATES.
                 </p>
 
-                <button 
-                    onClick={handleFactoryReset}
-                    className={`btn-brutal text-sm py-3 px-6 ${
-                        confirmReset ? 'bg-black text-white hover:bg-red hover:text-white' : 'bg-red text-white'
-                    }`}
-                >
-                    {confirmReset ? 'CONFIRM COMPLETE SYSTEM WIPE' : 'FACTORY RESET'}
-                </button>
+                <div className="flex flex-wrap gap-4 pt-2">
+                    {/* Clear all to 0 button */}
+                    <button 
+                        onClick={handleClearAllData}
+                        className={`btn-brutal text-sm py-3 px-6 ${
+                            confirmClear ? 'bg-black text-white hover:bg-red hover:text-white' : 'bg-red text-white'
+                        }`}
+                    >
+                        {confirmClear ? 'CONFIRM DATA CLEAR TO 0' : 'RESET ALL DATA TO 0'}
+                    </button>
+
+                    {/* Factory Reset button */}
+                    <button 
+                        onClick={handleFactoryReset}
+                        className={`btn-brutal text-sm py-3 px-6 ${
+                            confirmReset ? 'bg-black text-white hover:bg-red hover:text-white' : 'btn-white hover:bg-black hover:text-white'
+                        }`}
+                    >
+                        {confirmReset ? 'CONFIRM FACTORY RESET' : 'RESTORE FACTORY DEFAULTS'}
+                    </button>
+                </div>
             </div>
         </div>
     );

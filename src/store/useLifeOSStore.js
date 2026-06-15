@@ -501,6 +501,21 @@ export const useLifeOSStore = create(
                     toasts: []
                 });
                 get().addToast("System reset to defaults", "warning");
+            },
+            clearAllData: () => {
+                set({
+                    subscriptions: [],
+                    transactions: [],
+                    tasks: [],
+                    habits: [],
+                    budgets: [],
+                    goals: [],
+                    books: [],
+                    weeklyFocus: '',
+                    weeklyFocusCompleted: false,
+                    moodHistory: {}
+                });
+                get().addToast("All database values cleared (set to 0)", "warning");
             }
         }),
         {
