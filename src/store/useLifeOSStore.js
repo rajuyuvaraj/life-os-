@@ -508,6 +508,23 @@ export const useLifeOSStore = create(
                 // Helper to wipe local data before loading new user session
                 const resetDataForNewUser = () => {
                     set({
+                        subscriptions: [],
+                        transactions: [],
+                        tasks: [],
+                        habits: [],
+                        budgets: [],
+                        goals: [],
+                        books: [],
+                        weeklyFocus: 'FLOAT ACCORDING TO PLAN. DEFRAUD ENTROPY.',
+                        weeklyFocusCompleted: false,
+                        moodHistory: {},
+                        timerLogs: []
+                    });
+                };
+
+                // Helper to load defaults for Raju
+                const resetDataToDefaults = () => {
+                    set({
                         subscriptions: defaultSubscriptions,
                         transactions: defaultTransactions,
                         tasks: defaultTasks,
@@ -522,9 +539,10 @@ export const useLifeOSStore = create(
                     });
                 };
 
-                const currentUser = get().user;
-                if (currentUser && currentUser.name.toLowerCase() !== nameKey) {
+                if (nameKey !== 'raju') {
                     resetDataForNewUser();
+                } else {
+                    resetDataToDefaults();
                 }
 
                 if (nameKey === 'raju' && password.toLowerCase() === 'brutalist') {
@@ -540,10 +558,6 @@ export const useLifeOSStore = create(
                     const userRef = doc(db, "users", nameKey);
                     const userSnap = await getDoc(userRef);
                     if (userSnap.exists() && userSnap.data().password === password) {
-                        // If logging in as a new user, clear previous cached user's localStorage
-                        if (!currentUser || currentUser.name.toLowerCase() !== nameKey) {
-                            resetDataForNewUser();
-                        }
                         const originalName = userSnap.data().username;
                         set({ isAuthenticated: true, user: { name: originalName } });
                         get().addToast(`Authentication successful. Welcome ${originalName}.`, "success");

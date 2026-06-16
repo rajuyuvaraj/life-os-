@@ -40,7 +40,8 @@ export default function Dashboard() {
         moodHistory,
         setTodayMood,
         addTransaction,
-        timerLogs
+        timerLogs,
+        user
     } = useLifeOSStore();
 
     const currencySymbol = getCurrencySymbol();
@@ -219,7 +220,7 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                     <div>
                         <h1 className="font-sans font-black text-4xl md:text-5xl tracking-tight uppercase leading-none">
-                            HELLO RAJU
+                            HELLO {user?.name || 'OPERATOR'}
                         </h1>
                         <p className="font-mono text-xs font-bold text-gray-500 uppercase mt-2">
                             {getGreeting()} • WORKSPACE INTEGRATION ACTIVE
