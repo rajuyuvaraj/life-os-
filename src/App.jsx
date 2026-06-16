@@ -19,12 +19,52 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Timer from './pages/Timer';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 bg-red text-white min-h-screen font-mono space-y-4">
+          <h1 className="text-3xl font-black uppercase">CRITICAL SYSTEM CRASH</h1>
+          <p className="font-bold">THE INTERFACE FAILED TO RENDER. DIAGNOSTIC LOG ATTACHED BELOW:</p>
+          <pre className="border-4 border-black p-4 bg-black text-green-400 overflow-auto max-w-full text-xs">
+            {this.state.error?.stack || this.state.error?.toString()}
+          </pre>
+          <button 
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+            className="btn-brutal bg-white text-black mt-4 font-bold"
+          >
+            CLEAR CACHE & FORCE RELOAD
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const isAuthenticated = useLifeOSStore(state => state.isAuthenticated);
   const { toasts, removeToast } = useLifeOSStore();
 
   return (
-    <BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
       {/* Global Brutalist Confetti overlay */}
       <BrutalistConfetti />
 
@@ -93,8 +133,8 @@ export default function App() {
                       </motion.div>
                   );
               })}
-          </AnimatePresence>
       </div>
     </BrowserRouter>
+  </ErrorBoundary>
   );
 }
