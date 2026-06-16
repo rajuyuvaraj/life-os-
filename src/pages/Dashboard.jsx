@@ -38,7 +38,8 @@ export default function Dashboard() {
         toggleWeeklyFocus,
         moodHistory,
         setTodayMood,
-        addTransaction
+        addTransaction,
+        timerLogs
     } = useLifeOSStore();
 
     const currencySymbol = getCurrencySymbol();
@@ -581,47 +582,21 @@ export default function Dashboard() {
                     <div className="brutal-card p-6 bg-white relative">
                         <div className="floating-label">TIMER</div>
                         <h3 className="font-sans font-black text-xl mb-4 tracking-wide uppercase">
-                            POMODORO WATCH
+                            FOCUS PROTOCOL
                         </h3>
                         <div className="flex flex-col items-center justify-center bg-cream border-2 border-black p-4 space-y-4">
-                            <span className="font-mono text-4xl font-black tracking-widest text-black">
-                                {String(pomoMinutes).padStart(2, '0')}:{String(pomoSeconds).padStart(2, '0')}
-                            </span>
-                            <span className="font-mono text-[9px] font-bold bg-black text-white px-2 py-0.5 border border-black uppercase">
-                                {pomoType === 'work' ? 'FOCUS PERIOD' : 'REST INTERVAL'}
-                            </span>
-                            
-                            <div className="flex gap-3 w-full">
-                                {pomoIsActive ? (
-                                    <button 
-                                        type="button"
-                                        onClick={() => setPomoIsActive(false)}
-                                        className="btn-brutal bg-yellow py-2 flex-1 text-xs font-mono font-bold"
-                                    >
-                                        <Pause size={12} className="inline mr-1" /> PAUSE
-                                    </button>
-                                ) : (
-                                    <button 
-                                        type="button"
-                                        onClick={() => setPomoIsActive(true)}
-                                        className="btn-brutal bg-green py-2 flex-1 text-xs font-mono font-bold"
-                                    >
-                                        <Play size={12} className="inline mr-1" /> START
-                                    </button>
-                                )}
-                                <button 
-                                    type="button"
-                                    onClick={() => {
-                                        setPomoIsActive(false);
-                                        setPomoMinutes(pomoType === 'work' ? 25 : 5);
-                                        setPomoSeconds(0);
-                                    }}
-                                    className="btn-brutal bg-white py-2 px-3 text-xs font-mono font-bold"
-                                    title="Reset timer"
-                                >
-                                    <Square size={12} />
-                                </button>
+                            <Clock size={32} className="text-black" />
+                            <div className="text-center font-mono uppercase">
+                                <span className="text-[10px] font-bold text-gray-500 block">SESSIONS LOGGED</span>
+                                <span className="text-xl font-black">{timerLogs.length} SESSIONS</span>
                             </div>
+                            
+                            <Link 
+                                to="/timer"
+                                className="btn-brutal bg-green w-full py-2.5 text-xs font-mono font-bold text-center justify-center"
+                            >
+                                <Play size={12} className="inline mr-1" /> START NEW TIMER
+                            </Link>
                         </div>
                     </div>
 

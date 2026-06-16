@@ -17,6 +17,7 @@ import Goals from './pages/Goals';
 import MonthlyReport from './pages/MonthlyReport';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import Timer from './pages/Timer';
 
 export default function App() {
   const isAuthenticated = useLifeOSStore(state => state.isAuthenticated);
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="goals" element={<Goals />} />
             <Route path="report" element={<MonthlyReport />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="timer" element={<Timer />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

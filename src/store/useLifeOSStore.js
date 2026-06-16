@@ -160,10 +160,31 @@ export const useLifeOSStore = create(
             isAuthenticated: false,
             user: null,
             syncStatus: 'offline',
+            timerLogs: [],
             
             // Toasts & UI triggers
             toasts: [],
             triggerConfetti: false,
+
+            addTimerLog: (title, duration, dateStr) => {
+                const newLog = {
+                    id: 'timer-log-' + Date.now(),
+                    title: title || 'UNNAMED FOCUS SESSION',
+                    duration: parseInt(duration) || 0,
+                    date: dateStr || getTodayDateString(),
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                set(state => ({
+                    timerLogs: [newLog, ...state.timerLogs]
+                }));
+                get().addToast(`Focus session recorded: ${newLog.title}`, 'success');
+            },
+            deleteTimerLog: (id) => {
+                set(state => ({
+                    timerLogs: state.timerLogs.filter(log => log.id !== id)
+                }));
+                get().addToast("Focus session log removed", "warning");
+            },
 
             setTheme: (t) => {
                 set({ theme: t });
@@ -541,6 +562,7 @@ export const useLifeOSStore = create(
                 moodHistory: state.moodHistory,
                 currency: state.currency,
                 theme: state.theme,
+                timerLogs: state.timerLogs,
                 isAuthenticated: state.isAuthenticated,
                 user: state.user
             })
@@ -579,6 +601,7 @@ const startFirebaseListener = (store) => {
                 weeklyFocusCompleted: remoteData.weeklyFocusCompleted || false,
                 moodHistory: remoteData.moodHistory || {},
                 currency: remoteData.currency || 'USD',
+                timerLogs: remoteData.timerLogs || [],
                 syncStatus: 'synced'
             });
             
@@ -648,7 +671,8 @@ export const setupSync = (store) => {
             state.weeklyFocus !== prevState.weeklyFocus ||
             state.weeklyFocusCompleted !== prevState.weeklyFocusCompleted ||
             state.moodHistory !== prevState.moodHistory ||
-            state.currency !== prevState.currency;
+            state.currency !== prevState.currency ||
+            state.timerLogs !== prevState.timerLogs;
 
         if (hasChanged) {
             if (!db) {
@@ -670,6 +694,7 @@ export const setupSync = (store) => {
                 weeklyFocusCompleted: state.weeklyFocusCompleted,
                 moodHistory: state.moodHistory,
                 currency: state.currency,
+                timerLogs: state.timerLogs,
                 updatedAt: Date.now()
             })
             .then(() => {

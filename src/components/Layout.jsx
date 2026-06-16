@@ -15,7 +15,8 @@ import {
     X,
     ChevronLeft,
     ChevronRight,
-    LogOut
+    LogOut,
+    Timer
 } from 'lucide-react';
 import { useLifeOSStore } from '../store/useLifeOSStore';
 
@@ -35,7 +36,8 @@ export default function Layout() {
         '/budget': 'EXPENSE CATEGORY BUDGETS',
         '/goals': 'GOALS & MILESTONES',
         '/report': 'MONTHLY ANALYSIS REPORT',
-        '/settings': 'SYSTEM PREFERENCES'
+        '/settings': 'SYSTEM PREFERENCES',
+        '/timer': 'FOCUS PROTOCOL TIMER'
     };
 
     const currentTitle = pageTitles[location.pathname] || 'LIFE OS';
@@ -46,6 +48,7 @@ export default function Layout() {
         { path: '/tasks', label: 'Tasks', icon: CheckSquare },
         { path: '/habits', label: 'Habits', icon: Heart },
         { path: '/budget', label: 'Budget', icon: PieChart },
+        { path: '/timer', label: 'Timer', icon: Timer },
         { path: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
         { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
         { path: '/goals', label: 'Goals', icon: Target },
