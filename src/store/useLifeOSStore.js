@@ -158,6 +158,7 @@ export const useLifeOSStore = create(
             currency: 'USD',
             isAuthenticated: false,
             user: null,
+            syncStatus: 'offline',
             
             // Toasts & UI triggers
             toasts: [],
@@ -546,11 +547,15 @@ let unsubscribe = null;
 
 const startFirebaseListener = (store) => {
     if (!db) {
+        store.setState({ syncStatus: 'offline' });
         console.warn("Firebase Firestore is not initialized. Sync is disabled.");
         return;
     }
     if (unsubscribe) return;
+    
+    store.setState({ syncStatus: 'connecting' });
     const docRef = doc(db, "sync", "raju");
+    
     unsubscribe = onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
             const remoteData = docSnap.data();
@@ -567,11 +572,18 @@ const startFirebaseListener = (store) => {
                 weeklyFocus: remoteData.weeklyFocus || '',
                 weeklyFocusCompleted: remoteData.weeklyFocusCompleted || false,
                 moodHistory: remoteData.moodHistory || {},
-                currency: remoteData.currency || 'USD'
+                currency: remoteData.currency || 'USD',
+                syncStatus: 'synced'
             });
             
             isSyncingFromRemote = false;
+        } else {
+            store.setState({ syncStatus: 'synced' });
         }
+    }, (error) => {
+        console.error("Firestore sync subscription error:", error);
+        store.setState({ syncStatus: 'error' });
+        store.getState().addToast(`Sync connection failed: ${error.message}`, "error");
     });
 };
 
@@ -587,6 +599,7 @@ export const setupSync = (store) => {
     const initialState = store.getState();
     if (initialState.isAuthenticated && initialState.user?.name === 'Raju') {
         if (!db) {
+            store.setState({ syncStatus: 'offline' });
             setTimeout(() => {
                 store.getState().addToast("Sync Offline: Firebase config missing on server.", "error");
             }, 1500);
@@ -601,12 +614,14 @@ export const setupSync = (store) => {
         if (authChanged) {
             if (state.isAuthenticated && state.user?.name === 'Raju') {
                 if (!db) {
+                    state.setState({ syncStatus: 'offline' });
                     state.addToast("Sync Offline: Firebase config missing on server.", "error");
                 } else {
                     startFirebaseListener(store);
                 }
             } else {
                 stopFirebaseListener();
+                store.setState({ syncStatus: 'offline' });
             }
         }
     });
@@ -635,6 +650,8 @@ export const setupSync = (store) => {
                 return;
             }
             const docRef = doc(db, "sync", "raju");
+            
+            store.setState({ syncStatus: 'connecting' });
             setDoc(docRef, {
                 subscriptions: state.subscriptions,
                 transactions: state.transactions,
@@ -648,7 +665,15 @@ export const setupSync = (store) => {
                 moodHistory: state.moodHistory,
                 currency: state.currency,
                 updatedAt: Date.now()
-            }).catch(err => console.error("Error syncing to Firebase:", err));
+            })
+            .then(() => {
+                store.setState({ syncStatus: 'synced' });
+            })
+            .catch(err => {
+                console.error("Error syncing to Firebase:", err);
+                store.setState({ syncStatus: 'error' });
+                store.getState().addToast(`Sync write failed: ${err.message}`, "error");
+            });
         }
     });
 };
