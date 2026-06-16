@@ -156,6 +156,7 @@ export const useLifeOSStore = create(
             weeklyFocusCompleted: false,
             moodHistory: {},
             currency: 'USD',
+            theme: 'light',
             isAuthenticated: false,
             user: null,
             syncStatus: 'offline',
@@ -164,6 +165,10 @@ export const useLifeOSStore = create(
             toasts: [],
             triggerConfetti: false,
 
+            setTheme: (t) => {
+                set({ theme: t });
+                document.documentElement.classList.toggle('dark', t === 'dark');
+            },
             setCurrency: (c) => set({ currency: c }),
             getCurrencySymbol: () => {
                 const c = get().currency;
@@ -535,6 +540,7 @@ export const useLifeOSStore = create(
                 weeklyFocusCompleted: state.weeklyFocusCompleted,
                 moodHistory: state.moodHistory,
                 currency: state.currency,
+                theme: state.theme,
                 isAuthenticated: state.isAuthenticated,
                 user: state.user
             })
@@ -680,4 +686,8 @@ export const setupSync = (store) => {
 
 // Start setup
 setupSync(useLifeOSStore);
+
+// Apply initial theme from persisted state
+const initialTheme = useLifeOSStore.getState().theme || 'light';
+document.documentElement.classList.toggle('dark', initialTheme === 'dark');
 

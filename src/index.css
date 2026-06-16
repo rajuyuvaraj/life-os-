@@ -3,13 +3,27 @@
 
 @import "tailwindcss";
 
+:root {
+  --cream: #F5F0E8;
+  --black: #000000;
+  --white: #FFFFFF;
+  --grid-color: rgba(0, 0, 0, 0.06);
+}
+
+.dark {
+  --cream: #121212;
+  --black: #FFFFFF;
+  --white: #1E1E1E;
+  --grid-color: rgba(255, 255, 255, 0.06);
+}
+
 @theme {
-  --color-cream: #F5F0E8;
-  --color-black: #000000;
+  --color-cream: var(--cream);
+  --color-black: var(--black);
   --color-yellow: #FFE566;
   --color-red: #FF4444;
   --color-green: #44CC88;
-  --color-white: #FFFFFF;
+  --color-white: var(--white);
 
   --font-sans: 'Space Grotesk', -apple-system, sans-serif;
   --font-mono: 'Space Mono', monospace;
@@ -26,25 +40,25 @@
   height: 12px;
 }
 ::-webkit-scrollbar-track {
-  background: #F5F0E8;
-  border-left: 2.5px solid #000000;
+  background: var(--cream);
+  border-left: 2.5px solid var(--black);
 }
 ::-webkit-scrollbar-thumb {
-  background: #000000;
-  border: 2px solid #F5F0E8;
+  background: var(--black);
+  border: 2px solid var(--cream);
 }
 
 /* Base Body Style with Graph Paper Texture */
 body {
-  background-color: #F5F0E8;
-  color: #000000;
+  background-color: var(--cream);
+  color: var(--black);
   font-family: 'Space Grotesk', sans-serif;
   overflow-x: hidden;
   margin: 0;
   min-height: 100vh;
   background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -55,9 +69,9 @@ body {
 
 /* Brutalist Shadow Utilities */
 .brutal-card {
-  background-color: #FFFFFF;
-  border: 2.5px solid #000000;
-  box-shadow: 4px 4px 0px #000000;
+  background-color: var(--white);
+  border: 2.5px solid var(--black);
+  box-shadow: 4px 4px 0px var(--black);
   transition: all 0.2s ease-in-out;
   position: relative;
 }
@@ -65,13 +79,13 @@ body {
 /* Brutalist Button Utility */
 .btn-brutal {
   background-color: #FFE566; /* default yellow */
-  border: 2.5px solid #000000;
-  color: #000000;
+  border: 2.5px solid var(--black);
+  color: var(--black);
   padding: 8px 16px;
   font-weight: 700;
   font-family: 'Space Grotesk', sans-serif;
   cursor: pointer;
-  box-shadow: 3px 3px 0px #000000;
+  box-shadow: 3px 3px 0px var(--black);
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
@@ -79,12 +93,12 @@ body {
   gap: 8px;
 }
 .btn-brutal:hover {
-  box-shadow: 0px 0px 0px #000000;
+  box-shadow: 0px 0px 0px var(--black);
   transform: translate(3px, 3px);
 }
 .btn-brutal:active {
-  background-color: #000000;
-  color: #FFFFFF;
+  background-color: var(--black);
+  color: var(--white);
 }
 
 /* Accent Colors for Buttons */
@@ -96,29 +110,29 @@ body {
   background-color: #44CC88;
 }
 .btn-white {
-  background-color: #FFFFFF;
+  background-color: var(--white);
 }
 .btn-black {
-  background-color: #000000;
-  color: #FFFFFF;
+  background-color: var(--black);
+  color: var(--white);
 }
 .btn-black:hover {
   background-color: #FFE566;
-  color: #000000;
+  color: var(--black);
 }
 
 /* Brutalist Inputs */
 .input-brutal {
-  background-color: #FFFFFF;
-  border: 2.5px solid #000000;
-  color: #000000;
+  background-color: var(--white);
+  border: 2.5px solid var(--black);
+  color: var(--black);
   padding: 8px 12px;
   font-family: 'Space Mono', monospace;
   outline: none;
   width: 100%;
 }
 .input-brutal:focus {
-  outline: 3px solid #000000;
+  outline: 3px solid var(--black);
 }
 
 /* Anti-gravity Card Rotations */
@@ -144,7 +158,7 @@ body {
 }
 .tilt-hover:hover {
   transform: rotate(0deg) translateY(0px) !important;
-  box-shadow: 6px 6px 0px #000000;
+  box-shadow: 6px 6px 0px var(--black);
   z-index: 50 !important;
 }
 
@@ -153,13 +167,13 @@ body {
   position: absolute;
   top: -14px;
   left: 12px;
-  background-color: #000000;
+  background-color: var(--black);
   color: #FFE566;
   padding: 2px 8px;
   font-size: 0.75rem;
   font-weight: 700;
   font-family: 'Space Mono', monospace;
-  border: 1.5px solid #000000;
+  border: 1.5px solid var(--black);
   z-index: 10;
   transform: rotate(-2deg);
 }
@@ -187,7 +201,7 @@ body {
 .checked-card-tilt {
   transform: rotate(1deg) scale(0.98);
   opacity: 0.8;
-  background-color: #F0EDE5;
+  background-color: var(--cream);
 }
 .checked-text {
   text-decoration: line-through;

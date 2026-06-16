@@ -15,6 +15,8 @@ export default function Settings() {
         clearAllData,
         currency: storeCurrency,
         setCurrency: setStoreCurrency,
+        theme,
+        setTheme,
         addToast 
     } = useLifeOSStore();
 
@@ -140,6 +142,32 @@ export default function Settings() {
                                 <option value="EUR">EUR (€) - EURO</option>
                                 <option value="GBP">GBP (£) - BRITISH POUND</option>
                             </select>
+                        </div>
+
+                        <div className="space-y-1 pb-2">
+                            <label className="font-mono text-xs font-bold block uppercase">THEME PROTOCOL</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setTheme('light')}
+                                    className={`btn-brutal py-2 px-4 font-mono text-xs font-bold uppercase transition-all ${
+                                        theme === 'light' ? 'bg-yellow text-black border-[2.5px] border-black shadow-[2px_2px_0px_#000]' : 'bg-white text-black border-[2.5px] border-black hover:bg-cream'
+                                    }`}
+                                    style={{ transform: theme === 'light' ? 'translate(0px, 0px)' : '' }}
+                                >
+                                    WHITE / LIGHT
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setTheme('dark')}
+                                    className={`btn-brutal py-2 px-4 font-mono text-xs font-bold uppercase transition-all ${
+                                        theme === 'dark' ? 'bg-yellow text-black border-[2.5px] border-black shadow-[2px_2px_0px_#000]' : 'bg-white text-black border-[2.5px] border-black hover:bg-cream'
+                                    }`}
+                                    style={{ transform: theme === 'dark' ? 'translate(0px, 0px)' : '' }}
+                                >
+                                    DARK PROTOCOL
+                                </button>
+                            </div>
                         </div>
 
                         <button type="submit" className="btn-brutal bg-green w-full py-3 mt-2">
