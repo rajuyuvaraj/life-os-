@@ -545,6 +545,10 @@ let isSyncingFromRemote = false;
 let unsubscribe = null;
 
 const startFirebaseListener = (store) => {
+    if (!db) {
+        console.warn("Firebase Firestore is not initialized. Sync is disabled.");
+        return;
+    }
     if (unsubscribe) return;
     const docRef = doc(db, "sync", "raju");
     unsubscribe = onSnapshot(docRef, (docSnap) => {
@@ -582,7 +586,13 @@ export const setupSync = (store) => {
     // If already authenticated on load
     const initialState = store.getState();
     if (initialState.isAuthenticated && initialState.user?.name === 'Raju') {
-        startFirebaseListener(store);
+        if (!db) {
+            setTimeout(() => {
+                store.getState().addToast("Sync Offline: Firebase config missing on server.", "error");
+            }, 1500);
+        } else {
+            startFirebaseListener(store);
+        }
     }
 
     // Listen to changes in authentication status
@@ -590,7 +600,11 @@ export const setupSync = (store) => {
         const authChanged = state.isAuthenticated !== prevState.isAuthenticated;
         if (authChanged) {
             if (state.isAuthenticated && state.user?.name === 'Raju') {
-                startFirebaseListener(store);
+                if (!db) {
+                    state.addToast("Sync Offline: Firebase config missing on server.", "error");
+                } else {
+                    startFirebaseListener(store);
+                }
             } else {
                 stopFirebaseListener();
             }
@@ -616,6 +630,10 @@ export const setupSync = (store) => {
             state.currency !== prevState.currency;
 
         if (hasChanged) {
+            if (!db) {
+                console.warn("Sync failed: db is not initialized.");
+                return;
+            }
             const docRef = doc(db, "sync", "raju");
             setDoc(docRef, {
                 subscriptions: state.subscriptions,

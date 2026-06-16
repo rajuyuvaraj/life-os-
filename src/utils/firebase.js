@@ -11,6 +11,17 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+let db = null;
+try {
+  if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    console.log("Firebase Firestore initialized successfully.");
+  } else {
+    console.warn("Firebase API key or Project ID is missing. Firestore sync is disabled.");
+  }
+} catch (error) {
+  console.error("Failed to initialize Firebase:", error);
+}
+
+export { db };
