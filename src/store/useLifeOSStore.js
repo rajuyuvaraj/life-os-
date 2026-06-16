@@ -504,7 +504,7 @@ export const useLifeOSStore = create(
             },
             login: async (username, password) => {
                 const nameKey = username.trim().toLowerCase();
-                if (nameKey === 'raju' && password === 'brutalist') {
+                if (nameKey === 'raju' && password.toLowerCase() === 'brutalist') {
                     set({ isAuthenticated: true, user: { name: 'Raju' } });
                     get().addToast("Authentication successful. Welcome Raju.", "success");
                     return true;
