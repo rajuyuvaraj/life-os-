@@ -588,7 +588,7 @@ export default function Dashboard() {
                             <Clock size={32} className="text-black" />
                             <div className="text-center font-mono uppercase">
                                 <span className="text-[10px] font-bold text-gray-500 block">SESSIONS LOGGED</span>
-                                <span className="text-xl font-black">{timerLogs.length} SESSIONS</span>
+                                <span className="text-xl font-black">{(timerLogs || []).length} SESSIONS</span>
                             </div>
                             
                             <Link 

@@ -221,12 +221,12 @@ export default function Timer() {
                     <div className="space-y-4 font-mono text-xs uppercase">
                         <div className="p-3 border-2 border-black bg-cream flex justify-between items-center">
                             <span>TOTAL LOGS</span>
-                            <span className="font-black text-sm">{timerLogs.length}</span>
+                            <span className="font-black text-sm">{(timerLogs || []).length}</span>
                         </div>
                         <div className="p-3 border-2 border-black bg-cream flex justify-between items-center">
                             <span>TOTAL ACCUMULATED FOCUS</span>
                             <span className="font-black text-sm">
-                                {formatDuration(timerLogs.reduce((sum, log) => sum + log.duration, 0))}
+                                {formatDuration((timerLogs || []).reduce((sum, log) => sum + log.duration, 0))}
                             </span>
                         </div>
                         <p className="text-[10px] text-gray-500 leading-relaxed pt-2">
@@ -245,12 +245,12 @@ export default function Timer() {
                 </h3>
                 
                 <div className="space-y-3">
-                    {timerLogs.length === 0 ? (
+                    {(timerLogs || []).length === 0 ? (
                         <div className="border-2 border-dashed border-black p-10 text-center text-gray-500 font-mono text-sm uppercase">
                             NO LOGGED FOCUS SESSIONS YET. START A SESSION ABOVE.
                         </div>
                     ) : (
-                        timerLogs.map((log) => (
+                        (timerLogs || []).map((log) => (
                             <div key={log.id} className="border-2 border-black p-4 flex items-center justify-between bg-cream hover:bg-white transition-colors">
                                 <div className="flex flex-col">
                                     <span className="font-sans font-black text-sm uppercase tracking-wide">{log.title}</span>
