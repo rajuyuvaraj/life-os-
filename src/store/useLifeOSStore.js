@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { db } from '../utils/firebase';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
 // Helper to format date as YYYY-MM-DD
 export const getTodayDateString = () => {
@@ -473,13 +473,61 @@ export const useLifeOSStore = create(
             },
 
             // Authentication Actions
-            login: (username, password) => {
-                if (username.toLowerCase() === 'raju' && password.toLowerCase() === 'brutalist') {
+            register: async (username, password) => {
+                if (!db) {
+                    get().addToast("Registration Offline: Firebase config missing.", "error");
+                    return false;
+                }
+                const nameKey = username.trim().toLowerCase();
+                if (nameKey === 'raju') {
+                    get().addToast("Username 'raju' is reserved.", "error");
+                    return false;
+                }
+                try {
+                    const userRef = doc(db, "users", nameKey);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        get().addToast("Username already registered.", "error");
+                        return false;
+                    }
+                    await setDoc(userRef, {
+                        username: username.trim(),
+                        password: password
+                    });
+                    get().addToast("Registration successful! Please log in.", "success");
+                    return true;
+                } catch (e) {
+                    console.error("Registration error:", e);
+                    get().addToast(`Registration failed: ${e.message}`, "error");
+                    return false;
+                }
+            },
+            login: async (username, password) => {
+                const nameKey = username.trim().toLowerCase();
+                if (nameKey === 'raju' && password === 'brutalist') {
                     set({ isAuthenticated: true, user: { name: 'Raju' } });
                     get().addToast("Authentication successful. Welcome Raju.", "success");
                     return true;
-                } else {
-                    get().addToast("Invalid credentials. Try Raju / brutalist", "error");
+                }
+                if (!db) {
+                    get().addToast("Login Offline: Firebase config missing.", "error");
+                    return false;
+                }
+                try {
+                    const userRef = doc(db, "users", nameKey);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists() && userSnap.data().password === password) {
+                        const originalName = userSnap.data().username;
+                        set({ isAuthenticated: true, user: { name: originalName } });
+                        get().addToast(`Authentication successful. Welcome ${originalName}.`, "success");
+                        return true;
+                    } else {
+                        get().addToast("Invalid operator credentials.", "error");
+                        return false;
+                    }
+                } catch (e) {
+                    console.error("Login error:", e);
+                    get().addToast(`Login failed: ${e.message}`, "error");
                     return false;
                 }
             },
@@ -581,8 +629,12 @@ const startFirebaseListener = (store) => {
     }
     if (unsubscribe) return;
     
+    const user = store.getState().user;
+    if (!user || !user.name) return;
+    const nameKey = user.name.toLowerCase();
+    
     store.setState({ syncStatus: 'connecting' });
-    const docRef = doc(db, "sync", "raju");
+    const docRef = doc(db, "sync", nameKey);
     
     unsubscribe = onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
@@ -626,7 +678,7 @@ const stopFirebaseListener = () => {
 export const setupSync = (store) => {
     // If already authenticated on load
     const initialState = store.getState();
-    if (initialState.isAuthenticated && initialState.user?.name === 'Raju') {
+    if (initialState.isAuthenticated && initialState.user?.name) {
         if (!db) {
             store.setState({ syncStatus: 'offline' });
             setTimeout(() => {
@@ -641,7 +693,7 @@ export const setupSync = (store) => {
     store.subscribe((state, prevState) => {
         const authChanged = state.isAuthenticated !== prevState.isAuthenticated;
         if (authChanged) {
-            if (state.isAuthenticated && state.user?.name === 'Raju') {
+            if (state.isAuthenticated && state.user?.name) {
                 if (!db) {
                     state.setState({ syncStatus: 'offline' });
                     state.addToast("Sync Offline: Firebase config missing on server.", "error");
@@ -658,7 +710,7 @@ export const setupSync = (store) => {
     // Push local updates to Firebase
     store.subscribe((state, prevState) => {
         if (isSyncingFromRemote) return;
-        if (!state.isAuthenticated || state.user?.name !== 'Raju') return;
+        if (!state.isAuthenticated || !state.user?.name) return;
 
         const hasChanged = 
             state.subscriptions !== prevState.subscriptions ||
@@ -679,7 +731,8 @@ export const setupSync = (store) => {
                 console.warn("Sync failed: db is not initialized.");
                 return;
             }
-            const docRef = doc(db, "sync", "raju");
+            const nameKey = state.user.name.toLowerCase();
+            const docRef = doc(db, "sync", nameKey);
             
             store.setState({ syncStatus: 'connecting' });
             setDoc(docRef, {

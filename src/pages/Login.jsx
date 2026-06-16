@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
 import { useLifeOSStore } from '../store/useLifeOSStore';
-import { Target, Key, Flame } from 'lucide-react';
+import { Target, Key, UserPlus } from 'lucide-react';
 
 export default function Login() {
-    const { login } = useLifeOSStore();
+    const { login, register } = useLifeOSStore();
+    const [isRegister, setIsRegister] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        login(username, password);
+        if (isRegister) {
+            const success = await register(username, password);
+            if (success) {
+                setIsRegister(false); // Switch to login after successful register
+                setPassword('');
+            }
+        } else {
+            await login(username, password);
+        }
     };
 
     return (
@@ -26,38 +35,40 @@ export default function Login() {
             >
                 {/* Visual stamps */}
                 <div className="absolute -top-3.5 -right-3.5 bg-black text-yellow border-2 border-black px-2.5 py-1 font-mono text-[9px] font-bold tracking-widest rotate-6 uppercase">
-                    SYS.AUTH.REQ
+                    {isRegister ? 'SYS.REG.REQ' : 'SYS.AUTH.REQ'}
                 </div>
                 
-                <div className="floating-label">ACCESS STATION</div>
+                <div className="floating-label">
+                    {isRegister ? 'CREATE IDENTITY' : 'ACCESS STATION'}
+                </div>
 
                 <div className="text-center mb-8 border-b-2 border-black pb-4">
                     <h1 className="font-sans font-black text-4xl tracking-tighter uppercase leading-none">
                         LIFE <span className="bg-yellow px-1.5 py-0.5 border-2 border-black">OS</span>
                     </h1>
                     <p className="font-mono text-[10px] text-gray-500 font-bold uppercase mt-2">
-                        SECURE LOGON PROTOCOL // AGENT PORTAL
+                        {isRegister ? 'NEW OPERATOR SIGNUP' : 'SECURE LOGON PROTOCOL // AGENT PORTAL'}
                     </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1.5">
-                        <label className="font-mono text-xs font-bold block uppercase flex items-center gap-1.5">
+                        <label className="font-mono text-xs font-bold block uppercase flex items-center gap-1.5 text-black">
                             <Target size={14} />
-                            <span>OPERATOR NAME</span>
+                            <span>OPERATOR NAME / GMAIL</span>
                         </label>
                         <input 
                             type="text" 
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="e.g. RAJU"
+                            placeholder="e.g. OPERATOR@GMAIL.COM"
                             required
-                            className="input-brutal font-mono uppercase"
+                            className="input-brutal font-mono uppercase bg-white text-black"
                         />
                     </div>
 
                     <div className="space-y-1.5">
-                        <label className="font-mono text-xs font-bold block uppercase flex items-center gap-1.5">
+                        <label className="font-mono text-xs font-bold block uppercase flex items-center gap-1.5 text-black">
                             <Key size={14} />
                             <span>PASSCODE</span>
                         </label>
@@ -67,23 +78,31 @@ export default function Login() {
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
                             required
-                            className="input-brutal font-mono"
+                            className="input-brutal font-mono bg-white text-black"
                         />
                     </div>
 
                     <button 
                         type="submit" 
-                        className="btn-brutal bg-yellow w-full py-3 font-sans font-black tracking-wide text-sm mt-3 uppercase"
+                        className="btn-brutal bg-yellow w-full py-3 font-sans font-black tracking-wide text-sm mt-3 uppercase text-black"
                     >
-                        INITIATE SESSION
+                        {isRegister ? 'CONFIRM SIGNUP' : 'INITIATE SESSION'}
                     </button>
                 </form>
 
-                {/* Hints panel */}
-                <div className="mt-6 border border-black border-dashed p-3 bg-cream font-mono text-[10px] space-y-1">
-                    <div className="font-bold uppercase text-gray-600">[AUTHENTICATION PARAMETERS]</div>
-                    <div>• USERNAME: <span className="font-black text-black bg-white px-1">RAJU</span></div>
-                    <div>• PASSCODE: <span className="font-black text-black bg-white px-1">BRUTALIST</span></div>
+                {/* Switch Login / Register link */}
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={() => {
+                            setIsRegister(!isRegister);
+                            setUsername('');
+                            setPassword('');
+                        }}
+                        className="font-mono text-[11px] font-bold text-black hover:underline uppercase flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                    >
+                        <UserPlus size={12} />
+                        {isRegister ? 'Already have an identity? Log in' : 'Create new operator identity'}
+                    </button>
                 </div>
             </div>
             
