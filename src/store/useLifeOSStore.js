@@ -504,6 +504,29 @@ export const useLifeOSStore = create(
             },
             login: async (username, password) => {
                 const nameKey = username.trim().toLowerCase();
+                
+                // Helper to wipe local data before loading new user session
+                const resetDataForNewUser = () => {
+                    set({
+                        subscriptions: defaultSubscriptions,
+                        transactions: defaultTransactions,
+                        tasks: defaultTasks,
+                        habits: defaultHabits,
+                        budgets: defaultBudgets,
+                        goals: defaultGoals,
+                        books: defaultBooks,
+                        weeklyFocus: 'FLOAT ACCORDING TO PLAN. DEFRAUD ENTROPY.',
+                        weeklyFocusCompleted: false,
+                        moodHistory: {},
+                        timerLogs: []
+                    });
+                };
+
+                const currentUser = get().user;
+                if (currentUser && currentUser.name.toLowerCase() !== nameKey) {
+                    resetDataForNewUser();
+                }
+
                 if (nameKey === 'raju' && password.toLowerCase() === 'brutalist') {
                     set({ isAuthenticated: true, user: { name: 'Raju' } });
                     get().addToast("Authentication successful. Welcome Raju.", "success");
@@ -517,6 +540,10 @@ export const useLifeOSStore = create(
                     const userRef = doc(db, "users", nameKey);
                     const userSnap = await getDoc(userRef);
                     if (userSnap.exists() && userSnap.data().password === password) {
+                        // If logging in as a new user, clear previous cached user's localStorage
+                        if (!currentUser || currentUser.name.toLowerCase() !== nameKey) {
+                            resetDataForNewUser();
+                        }
                         const originalName = userSnap.data().username;
                         set({ isAuthenticated: true, user: { name: originalName } });
                         get().addToast(`Authentication successful. Welcome ${originalName}.`, "success");
@@ -532,7 +559,21 @@ export const useLifeOSStore = create(
                 }
             },
             logout: () => {
-                set({ isAuthenticated: false, user: null });
+                set({ 
+                    isAuthenticated: false, 
+                    user: null,
+                    subscriptions: defaultSubscriptions,
+                    transactions: defaultTransactions,
+                    tasks: defaultTasks,
+                    habits: defaultHabits,
+                    budgets: defaultBudgets,
+                    goals: defaultGoals,
+                    books: defaultBooks,
+                    weeklyFocus: 'FLOAT ACCORDING TO PLAN. DEFRAUD ENTROPY.',
+                    weeklyFocusCompleted: false,
+                    moodHistory: {},
+                    timerLogs: []
+                });
                 get().addToast("Logged out from system.", "info");
             },
 
