@@ -478,11 +478,24 @@ export const useLifeOSStore = create(
                     get().addToast("Registration Offline: Firebase config missing.", "error");
                     return false;
                 }
-                const nameKey = username.trim().toLowerCase();
+                const trimmedUsername = username.trim();
+                const nameKey = trimmedUsername.toLowerCase();
+                
                 if (nameKey === 'raju') {
                     get().addToast("Username 'raju' is reserved.", "error");
                     return false;
                 }
+                
+                if (trimmedUsername.length < 3) {
+                    get().addToast("Username must be at least 3 characters long.", "error");
+                    return false;
+                }
+
+                if (!password || password.length < 6) {
+                    get().addToast("Passcode must be at least 6 characters long.", "error");
+                    return false;
+                }
+
                 try {
                     const userRef = doc(db, "users", nameKey);
                     const userSnap = await getDoc(userRef);
@@ -490,9 +503,18 @@ export const useLifeOSStore = create(
                         get().addToast("Username already registered.", "error");
                         return false;
                     }
+
+                    // Securely hash password before writing to the database
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(password);
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                    const hashedPassword = Array.from(new Uint8Array(hashBuffer))
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join('');
+
                     await setDoc(userRef, {
-                        username: username.trim(),
-                        password: password
+                        username: trimmedUsername,
+                        password: hashedPassword
                     });
                     get().addToast("Registration successful! Please log in.", "success");
                     return true;
@@ -557,15 +579,35 @@ export const useLifeOSStore = create(
                 try {
                     const userRef = doc(db, "users", nameKey);
                     const userSnap = await getDoc(userRef);
-                    if (userSnap.exists() && userSnap.data().password === password) {
-                        const originalName = userSnap.data().username;
-                        set({ isAuthenticated: true, user: { name: originalName } });
-                        get().addToast(`Authentication successful. Welcome ${originalName}.`, "success");
-                        return true;
-                    } else {
-                        get().addToast("Invalid operator credentials.", "error");
-                        return false;
+                    if (userSnap.exists()) {
+                        const dbPassword = userSnap.data().password;
+                        
+                        // Hash incoming password to check match
+                        const encoder = new TextEncoder();
+                        const data = encoder.encode(password);
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                        const hashedPassword = Array.from(new Uint8Array(hashBuffer))
+                            .map(b => b.toString(16).padStart(2, '0'))
+                            .join('');
+
+                        // Verify against hashed password or fallback plaintext password (for backward compatibility)
+                        const isValid = dbPassword === hashedPassword || dbPassword === password;
+                        if (isValid) {
+                            // If user was using plain password, auto-upgrade it to hashed version
+                            if (dbPassword === password) {
+                                await setDoc(userRef, {
+                                    username: userSnap.data().username,
+                                    password: hashedPassword
+                                }, { merge: true });
+                            }
+                            const originalName = userSnap.data().username;
+                            set({ isAuthenticated: true, user: { name: originalName } });
+                            get().addToast(`Authentication successful. Welcome ${originalName}.`, "success");
+                            return true;
+                        }
                     }
+                    get().addToast("Invalid operator credentials.", "error");
+                    return false;
                 } catch (e) {
                     console.error("Login error:", e);
                     get().addToast(`Login failed: ${e.message}`, "error");
